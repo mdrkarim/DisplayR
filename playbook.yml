@@ -1,0 +1,28 @@
+---
+
+- name: Server administration
+  hosts: "*"
+  become: true
+  tasks:
+  - name: Creating an empty file
+    file:
+      path: "/tmp/test.txt"
+      state: touch  
+  - name: Transfer file
+    copy:
+      src: healthcheck.sh
+      dest: /tmp
+      owner: ec2-user
+      group: ec2-user
+      mode: 0644
+  - name: Run CRON job to load data at every 2nd minute of every hour.
+    become: yes
+    become_method: sudo
+    cron:
+      name: "load_data"
+      user: "ec2-user"
+      weekday: "*"
+      minute: "2"
+      hour: "*"
+      job: "/tmp/healthcheck.sh"
+      state: present
